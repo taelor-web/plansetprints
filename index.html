@@ -7,6 +7,7 @@
 <meta name="description" content="Fast, affordable large-format blueprint printing for contractors and architects in Utah County. 1–3 business day turnaround.">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
 :root {
   --white: #ffffff;
@@ -557,6 +558,17 @@ textarea.form-input { min-height: 72px; resize: vertical; }
 
 
 <script>
+// ============================================================
+// EMAILJS CONFIGURATION
+// ============================================================
+const EMAILJS_PUBLIC_KEY  = 'GfhzLLe_u4w7Y0iJJ';
+const EMAILJS_SERVICE_ID  = 'service_tyspguh';
+const EMAILJS_TEMPLATE_ID = 'template_f7fk669';
+const ORDER_EMAIL         = 'plansetprints@gmail.com';
+// ============================================================
+
+if (typeof emailjs !== 'undefined') { emailjs.init(EMAILJS_PUBLIC_KEY); }
+
 // ── PRICING ──
 const PRICES = { "18x24":{bw:2,color:4}, "24x36":{bw:3,color:6}, "30x42":{bw:5,color:8}, "36x48":{bw:7.25,color:10} };
 const LABELS = { "18x24":'18" × 24"', "24x36":'24" × 36"', "30x42":'30" × 42"', "36x48":'36" × 48"' };
@@ -716,28 +728,76 @@ async function submitOrder() {
     items.push('Item ' + (i+1) + ': ' + LABELS[sz] + ' | ' + (tp === 'color' ? 'Color' : 'B&W') + ' | ' + sh + ' sheets × ' + cp + ' copies = $' + sub.toFixed(2));
   });
 
-  const data = {
-    name, company: document.getElementById('f-company').value.trim() || 'N/A',
-    email, phone,
-    items: items.join('\n'),
-    files: uploadedFiles.length ? uploadedFiles.map(f => f.name + ' (' + fmtSize(f.size) + (f.pages ? ', ' + f.pages + ' pages' : '') + ')').join(', ') : 'None',
-    turnaround: turn === 'rush' ? 'RUSH Next-Day (+35%)' : 'Standard (1-3 business days)',
-    delivery: del === 'delivery' ? 'Delivery' : 'Pickup',
-    notes: document.getElementById('f-notes').value.trim() || 'None',
-    total: document.getElementById('orderTotal').textContent,
-  };
+  // Build project fields
+  const company = document.getElementById('f-company').value.trim();
+  const notes   = document.getElementById('f-notes').value.trim();
+  const turnLabel = turn === 'rush' ? 'RUSH Next-Day (+35%)' : 'Standard (1-3 business days)';
+  const delLabel  = del === 'delivery' ? 'Delivery' : 'Local Pickup';
+  const totalTxt  = document.getElementById('orderTotal').textContent;
 
-  // EmailJS: replace with your IDs
-  // emailjs.send('SERVICE_ID', 'TEMPLATE_ID', data, 'PUBLIC_KEY');
+  const RULE = '-'.repeat(34);
+  let body = '';
+  body += 'CONTACT INFORMATION\n' + RULE + '\n';
+  body += 'Name: ' + name + '\n';
+  if (company) body += 'Company: ' + company + '\n';
+  body += 'Email: ' + email + '\n';
+  body += 'Phone: ' + phone + '\n\n';
+
+  body += 'FILES UPLOADED\n' + RULE + '\n';
+  if (uploadedFiles.length) {
+    uploadedFiles.forEach(f => {
+      body += f.name + ' (' + fmtSize(f.size) + (f.pages ? ', ' + f.pages + ' pages' : '') + ')\n';
+    });
+  } else {
+    body += 'No files uploaded - customer will send separately\n';
+  }
+  body += '\n';
+
+  body += 'PRINT ORDER\n' + RULE + '\n';
+  items.forEach(l => { body += l + '\n'; });
+  body += RULE + '\n';
+  body += 'ESTIMATED TOTAL: ' + totalTxt + '\n\n';
+
+  body += 'OPTIONS\n' + RULE + '\n';
+  body += 'Turnaround: ' + turnLabel + '\n';
+  body += 'Delivery: ' + delLabel + '\n';
+  if (notes) body += 'Notes: ' + notes + '\n';
+  body += '\n';
+  body += 'Note: This is a customer-generated estimate.\n';
+  body += 'Confirm pricing and file details before invoicing.\n';
+
+  const subject = 'Print Order - ' + name + (company ? ' (' + company + ')' : '') + ' - ' + totalTxt;
+
+  // Convert to HTML so line breaks survive the rich-text template
+  const htmlBody = body
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/\n/g, '<br>');
+
   try {
-    console.log('Order:', data);
-    await new Promise(r => setTimeout(r, 1200));
+    await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
+      subject: subject,
+      body: htmlBody,
+      from_name: name,
+      from_email: email,
+      reply_to: email,
+    });
     document.getElementById('orderForm').style.display = 'none';
     document.getElementById('orderSuccess').style.display = 'block';
-    document.getElementById('successTotal').textContent = data.total;
-  } catch(e) {
-    alert('Error submitting. Please call us directly.');
+    document.getElementById('successTotal').textContent = totalTxt;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  } catch(err) {
+    console.error('EmailJS error:', err);
     btn.disabled = false; btn.textContent = 'Submit estimate request';
+    if (confirm('Automatic sending failed. Send via your email app instead?')) {
+      window.location.href = 'mailto:' + ORDER_EMAIL +
+        '?subject=' + encodeURIComponent(subject) +
+        '&body=' + encodeURIComponent(body);
+      setTimeout(() => {
+        document.getElementById('orderForm').style.display = 'none';
+        document.getElementById('orderSuccess').style.display = 'block';
+        document.getElementById('successTotal').textContent = totalTxt;
+      }, 500);
+    }
   }
 }
 
