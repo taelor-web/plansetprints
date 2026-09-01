@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Plan Set Prints — Blueprint Printing, Utah County</title>
+<meta name="description" content="Fast, affordable large-format blueprint printing for contractors and architects in Utah County. Same-day turnaround.">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<style>
+:root {
+  --white: #ffffff;
+  --bg: #f7f8fa;
+  --text: #111111;
+  --text-2: #555555;
+  --text-3: #888888;
+  --border: #e0e2e6;
+  --navy: #2b5592;
+  --navy-dark: #1e3f6f;
+  --navy-light: #edf2f9;
+  --orange: #e08a2a;
+  --orange-hover: #c97820;
+  --orange-light: #fef5eb;
+  --green: #15803d;
+  --green-light: #f0fdf4;
+  --red: #b91c1c;
+  --max-w: 960px;
+  --nav-h: 60px;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Inter', -apple-system, system-ui, sans-serif;
+  color: var(--text); background: var(--white);
+  line-height: 1.6; -webkit-font-smoothing: antialiased;
+}
+a { color: inherit; text-decoration: none; }
+button { font-family: inherit; cursor: pointer; }
+input, select, textarea { font-family: inherit; }
+
+.wrap { max-width: var(--max-w); margin: 0 auto; padding: 0 24px; }
+.page { display: none; }
+.page.active { display: block; }
+
+/* ── NAV ── */
+.nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  height: var(--nav-h); background: var(--navy-dark);
+  border-bottom: 3px solid var(--orange);
+}
+.nav-inner {
+  max-width: var(--max-w); margin: 0 auto; padding: 0 24px;
+  height: 100%; display: flex; align-items: center; justify-content: space-between;
+}
+.nav-logo {
+  font-size: 17px; font-weight: 800; letter-spacing: -0.03em;
+  cursor: pointer; display: flex; align-items: center; gap: 8px; color: #fff;
+}
+.nav-logo svg { color: var(--orange); }
+.nav-links { display: flex; align-items: center; gap: 4px; }
+.nav-link {
+  background: none; border: none; color: rgba(255,255,255,0.7);
+  padding: 8px 14px; border-radius: 6px; font-size: 14px; font-weight: 500;
+  transition: all 0.15s;
+}
+.nav-link:hover, .nav-link.active { color: #fff; background: rgba(255,255,255,0.1); }
+.nav-cta {
+  background: var(--orange); color: #fff; border: none;
+  padding: 8px 18px; border-radius: 6px; font-size: 14px; font-weight: 600;
+  margin-left: 8px; transition: background 0.15s;
+}
+.nav-cta:hover { background: var(--orange-hover); }
+.nav-mobile { display: none; background: none; border: none; padding: 4px; color: #fff; }
+.mobile-menu {
+  display: none; position: absolute; top: var(--nav-h); left: 0; right: 0;
+  background: var(--navy-dark); border-bottom: 3px solid var(--orange); padding: 8px 24px 16px;
+}
+.mobile-menu.open { display: block; }
+.mobile-menu button {
+  display: block; width: 100%; text-align: left; background: none; border: none;
+  padding: 12px 0; font-size: 15px; font-weight: 500; color: rgba(255,255,255,0.8);
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+@media (max-width: 640px) {
+  .nav-links { display: none; }
+  .nav-mobile { display: block; }
+}
+
+/* ── HERO ── */
+.hero {
+  padding: 120px 0 80px; text-align: center;
+}
+.hero h1 {
+  font-size: clamp(32px, 5vw, 52px); font-weight: 800;
+  letter-spacing: -0.035em; line-height: 1.1; margin-bottom: 16px;
+}
+.hero h1 span { color: var(--navy); }
+.hero p {
+  font-size: 18px; color: var(--text-2); max-width: 520px;
+  margin: 0 auto 32px; line-height: 1.6;
+}
+.hero-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+.btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 14px 28px; border-radius: 8px; font-size: 15px; font-weight: 600;
+  border: none; transition: all 0.15s;
+}
+.btn-blue { background: var(--orange); color: #fff; }
+.btn-blue:hover { background: var(--orange-hover); }
+.btn-outline { background: var(--white); color: var(--navy); border: 1.5px solid var(--navy); }
+.btn-outline:hover { background: var(--navy-light); }
+.btn-orange { background: var(--orange); color: #fff; }
+.btn-orange:hover { background: var(--orange-hover); }
+
+.hero-details {
+  display: flex; gap: 40px; justify-content: center; margin-top: 48px;
+  color: var(--text-2); font-size: 14px;
+}
+.hero-detail { display: flex; align-items: center; gap: 6px; }
+.hero-detail svg { color: var(--orange); width: 18px; height: 18px; }
+
+/* ── PRICING ── */
+.pricing { padding: 80px 0; background: var(--navy); border-top: none; border-bottom: none; }
+.pricing .section-title { color: #fff; }
+.pricing .section-sub { color: rgba(255,255,255,0.6); }
+.section-title { font-size: 28px; font-weight: 800; letter-spacing: -0.03em; margin-bottom: 6px; }
+.section-sub { font-size: 15px; color: var(--text-2); margin-bottom: 32px; }
+
+.price-table {
+  background: rgba(255,255,255,0.08); border-radius: 10px; border: 1px solid rgba(255,255,255,0.12);
+  overflow: hidden;
+}
+.price-row {
+  display: grid; grid-template-columns: 1.2fr 1fr 1fr;
+  padding: 14px 24px; border-bottom: 1px solid rgba(255,255,255,0.08); align-items: center;
+}
+.price-row:last-child { border-bottom: none; }
+.price-row.header { background: rgba(255,255,255,0.05); font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 0.05em; }
+.price-row.header span:not(:first-child) { text-align: center; }
+.price-size { font-size: 15px; font-weight: 600; color: #fff; }
+.price-val { text-align: center; font-size: 20px; font-weight: 800; color: #fff; }
+.price-val.color { color: var(--orange); }
+.price-val small { font-size: 12px; font-weight: 400; color: rgba(255,255,255,0.4); }
+
+/* ── SERVICES ── */
+.services { padding: 80px 0; }
+.services-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; }
+.service-card {
+  padding: 24px; border: 1px solid var(--border); border-radius: 10px;
+  transition: all 0.2s; border-left: 3px solid transparent;
+}
+.service-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.06); border-left-color: var(--orange); }
+.service-card h3 { font-size: 15px; font-weight: 700; margin-bottom: 6px; color: var(--navy); }
+.service-card p { font-size: 13px; color: var(--text-2); line-height: 1.6; }
+
+/* ── ORDER FORM ── */
+.order { padding: 80px 0; background: var(--bg); border-top: 1px solid var(--border); }
+.order-card {
+  background: var(--white); border: 1px solid var(--border);
+  border-radius: 12px; overflow: hidden;
+}
+.order-block { padding: 28px; }
+.order-block + .order-block { border-top: 1px solid var(--border); }
+.order-block h3 { font-size: 16px; font-weight: 700; margin-bottom: 16px; }
+
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.form-label { display: block; font-size: 13px; font-weight: 600; color: var(--text-2); margin-bottom: 5px; }
+.form-input {
+  width: 100%; padding: 10px 14px; border: 1px solid var(--border);
+  border-radius: 6px; font-size: 14px; color: var(--text);
+  background: var(--white); outline: none; transition: border-color 0.15s;
+}
+.form-input:focus { border-color: var(--navy); }
+select.form-input { cursor: pointer; }
+textarea.form-input { min-height: 72px; resize: vertical; }
+
+/* Upload */
+.upload-zone {
+  border: 1.5px dashed var(--border); border-radius: 10px;
+  padding: 32px 20px; text-align: center; cursor: pointer;
+  transition: all 0.15s; background: var(--bg);
+}
+.upload-zone:hover { border-color: var(--navy); background: var(--navy-light); }
+.upload-zone svg { width: 28px; height: 28px; color: var(--text-3); margin-bottom: 8px; }
+.upload-main { font-size: 14px; font-weight: 600; color: var(--text); }
+.upload-main em { color: var(--navy); font-style: normal; }
+.upload-sub { font-size: 12px; color: var(--text-3); margin-top: 4px; }
+
+.file-list { margin-top: 10px; }
+.file-item {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 14px; border: 1px solid var(--border); border-radius: 6px;
+  margin-bottom: 6px; background: var(--white);
+}
+.file-info { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.file-icon { color: var(--navy); flex-shrink: 0; }
+.file-icon svg { width: 18px; height: 18px; }
+.file-name { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.file-meta { font-size: 11px; color: var(--text-3); }
+.file-pages {
+  font-size: 11px; font-weight: 600; color: var(--navy);
+  background: var(--navy-light); padding: 2px 8px; border-radius: 100px;
+  white-space: nowrap;
+}
+.file-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+.file-remove {
+  background: none; border: none; color: var(--text-3); font-size: 18px;
+  width: 24px; height: 24px; display: flex; align-items: center; justify-content: center;
+  border-radius: 4px; transition: all 0.15s;
+}
+.file-remove:hover { background: #fee2e2; color: var(--red); }
+
+/* Line Items */
+.line-item {
+  padding: 16px; background: var(--bg); border: 1px solid var(--border);
+  border-radius: 8px; margin-bottom: 10px; position: relative;
+}
+.line-item-grid { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 10px; }
+.line-item-remove {
+  position: absolute; top: 10px; right: 10px;
+  background: none; border: none; color: var(--text-3); font-size: 16px;
+  width: 24px; height: 24px; border-radius: 4px;
+  display: flex; align-items: center; justify-content: center;
+}
+.line-item-remove:hover { background: #fee2e2; color: var(--red); }
+.line-sub { text-align: right; margin-top: 8px; font-size: 13px; color: var(--text-2); }
+.line-sub strong { color: var(--text); }
+
+.autofill-row {
+  margin-top: 8px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+}
+.autofill-label { font-size: 11px; color: var(--text-3); }
+.autofill-btn {
+  display: inline-flex; align-items: center; gap: 4px;
+  background: var(--orange-light); border: 1px solid #fed7aa;
+  color: var(--orange); padding: 4px 10px; border-radius: 5px;
+  font-size: 11px; font-weight: 600; cursor: pointer; transition: all 0.15s;
+}
+.autofill-btn:hover { background: #fed7aa; }
+.autofill-btn svg { width: 12px; height: 12px; }
+
+.add-btn {
+  width: 100%; padding: 12px; border-radius: 6px;
+  background: var(--white); border: 1.5px dashed var(--border);
+  font-size: 13px; font-weight: 600; color: var(--text-2);
+  transition: all 0.15s;
+}
+.add-btn:hover { border-color: var(--navy); color: var(--navy); background: var(--navy-light); }
+
+/* Options toggles */
+.opt-group { display: flex; gap: 8px; }
+.opt-btn {
+  flex: 1; padding: 12px; text-align: center;
+  background: var(--white); border: 1.5px solid var(--border);
+  border-radius: 6px; cursor: pointer; transition: all 0.15s;
+}
+.opt-btn.on { border-color: var(--navy); background: var(--navy-light); }
+.opt-btn-label { font-size: 13px; font-weight: 600; color: var(--text); }
+.opt-btn-sub { font-size: 11px; color: var(--text-3); margin-top: 2px; }
+
+/* Order footer */
+.order-footer {
+  padding: 24px 28px; background: var(--navy-dark); border-top: none;
+  display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;
+}
+.order-total { font-size: 28px; font-weight: 800; letter-spacing: -0.02em; color: #fff; }
+.order-total-label { font-size: 12px; color: rgba(255,255,255,0.5); }
+.order-total-note { font-size: 11px; color: var(--orange); margin-top: 2px; }
+
+/* Success */
+.success { text-align: center; padding: 80px 24px; }
+.success-check {
+  width: 56px; height: 56px; border-radius: 50%; margin: 0 auto 20px;
+  background: var(--green-light); color: var(--green);
+  display: flex; align-items: center; justify-content: center;
+}
+.success h2 { font-size: 24px; font-weight: 800; margin-bottom: 8px; }
+.success p { font-size: 15px; color: var(--text-2); max-width: 400px; margin: 0 auto; }
+
+/* ── CONTACT ── */
+.contact { padding: 80px 0; }
+.contact-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; }
+.contact-item {
+  padding: 24px; border: 1px solid var(--border); border-radius: 10px;
+  text-align: center;
+}
+.contact-item svg { width: 22px; height: 22px; color: var(--navy); margin-bottom: 10px; }
+.contact-label { font-size: 12px; color: var(--text-3); margin-bottom: 4px; }
+.contact-value { font-size: 16px; font-weight: 700; color: var(--navy); }
+.contact-note { font-size: 12px; color: var(--text-3); margin-top: 2px; }
+
+/* ── FOOTER ── */
+.footer {
+  padding: 32px 0; border-top: 3px solid var(--orange);
+  background: var(--navy-dark);
+  text-align: center; font-size: 13px; color: rgba(255,255,255,0.4);
+}
+
+@media (max-width: 640px) {
+  .form-row, .line-item-grid { grid-template-columns: 1fr; }
+  .hero-details { flex-direction: column; align-items: center; gap: 12px; }
+  .order-footer { flex-direction: column; text-align: center; }
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="nav-inner">
+    <div class="nav-logo" onclick="go('home')">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+      Plan Set Prints
+    </div>
+    <div class="nav-links">
+      <button class="nav-link" data-p="home" onclick="go('home')">Home</button>
+      <button class="nav-link" data-p="pricing" onclick="go('pricing')">Pricing</button>
+      <button class="nav-link" data-p="order" onclick="go('order')">Order</button>
+      <button class="nav-link" data-p="contact" onclick="go('contact')">Contact</button>
+      <button class="nav-cta" onclick="go('order')">Get Estimate</button>
+    </div>
+    <button class="nav-mobile" onclick="document.getElementById('mm').classList.toggle('open')">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="7" x2="21" y2="7"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="17" x2="21" y2="17"/></svg>
+    </button>
+  </div>
+  <div class="mobile-menu" id="mm">
+    <button onclick="go('home')">Home</button>
+    <button onclick="go('pricing')">Pricing</button>
+    <button onclick="go('order')">Order Prints</button>
+    <button onclick="go('contact')">Contact</button>
+  </div>
+</nav>
+
+<!-- ═══ HOME ═══ -->
+<div id="p-home" class="page active">
+
+  <section class="hero">
+    <div class="wrap">
+      <h1>Blueprint printing, <span>done right.</span></h1>
+      <p>Fast, affordable large-format printing for contractors, architects, and engineers in Utah County.</p>
+      <div class="hero-actions">
+        <button class="btn btn-blue" onclick="go('order')">Get a free estimate</button>
+        <button class="btn btn-outline" onclick="go('pricing')">See pricing</button>
+      </div>
+      <div class="hero-details">
+        <div class="hero-detail">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          Same-day turnaround
+        </div>
+        <div class="hero-detail">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          Local pickup & delivery
+        </div>
+        <div class="hero-detail">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+          40–60% less than FedEx
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="pricing">
+    <div class="wrap">
+      <div class="section-title">Pricing</div>
+      <p class="section-sub">Per sheet. No setup fees. Volume discounts available.</p>
+      <div class="price-table">
+        <div class="price-row header"><span>Size</span><span>Black & White</span><span>Color</span></div>
+        <div class="price-row"><span class="price-size">18" × 24"</span><span class="price-val">$2.00 <small>/sheet</small></span><span class="price-val color">$4.00 <small>/sheet</small></span></div>
+        <div class="price-row"><span class="price-size">24" × 36"</span><span class="price-val">$3.00 <small>/sheet</small></span><span class="price-val color">$6.00 <small>/sheet</small></span></div>
+        <div class="price-row"><span class="price-size">30" × 42"</span><span class="price-val">$5.00 <small>/sheet</small></span><span class="price-val color">$8.00 <small>/sheet</small></span></div>
+        <div class="price-row"><span class="price-size">36" × 48"</span><span class="price-val">$7.25 <small>/sheet</small></span><span class="price-val color">$10.00 <small>/sheet</small></span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="services">
+    <div class="wrap">
+      <div class="section-title">Services</div>
+      <p class="section-sub">What we print.</p>
+      <div class="services-grid">
+        <div class="service-card">
+          <h3>Plan Sets</h3>
+          <p>B&W and color construction plans on 20lb bond. Single sheets or full sets for permitting, bidding, and field use.</p>
+        </div>
+        <div class="service-card">
+          <h3>Bulk Copies</h3>
+          <p>Multiple copies of a full plan set. Consistent quality across every copy, any quantity.</p>
+        </div>
+        <div class="service-card">
+          <h3>Color Prints</h3>
+          <p>Renderings, site plans, landscaping plans, and presentation materials in full color.</p>
+        </div>
+        <div class="service-card">
+          <h3>Scanning</h3>
+          <p>Convert physical drawings to digital. High-resolution scanning to PDF or TIFF, up to 36" wide.</p>
+        </div>
+      </div>
+      <div style="text-align:center; margin-top:40px;">
+        <button class="btn btn-blue" onclick="go('order')">Get a free estimate</button>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<!-- ═══ PRICING ═══ -->
+<div id="p-pricing" class="page">
+  <div style="padding-top:var(--nav-h)">
+    <section class="pricing">
+      <div class="wrap">
+        <div class="section-title">Pricing</div>
+        <p class="section-sub">Per sheet. No setup fees. Volume discounts available.</p>
+        <div class="price-table">
+          <div class="price-row header"><span>Size</span><span>Black & White</span><span>Color</span></div>
+          <div class="price-row"><span class="price-size">18" × 24"</span><span class="price-val">$2.00 <small>/sheet</small></span><span class="price-val color">$4.00 <small>/sheet</small></span></div>
+          <div class="price-row"><span class="price-size">24" × 36"</span><span class="price-val">$3.00 <small>/sheet</small></span><span class="price-val color">$6.00 <small>/sheet</small></span></div>
+          <div class="price-row"><span class="price-size">30" × 42"</span><span class="price-val">$5.00 <small>/sheet</small></span><span class="price-val color">$8.00 <small>/sheet</small></span></div>
+          <div class="price-row"><span class="price-size">36" × 48"</span><span class="price-val">$7.25 <small>/sheet</small></span><span class="price-val color">$10.00 <small>/sheet</small></span></div>
+        </div>
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-top:20px;">
+          <div style="padding:14px 18px; border:1px solid rgba(255,255,255,0.12); border-radius:8px; background:rgba(255,255,255,0.06);"><div style="font-size:13px; font-weight:600; color:#fff;">Rush / Same-Day</div><div style="font-size:12px; color:var(--orange);">+35% surcharge</div></div>
+          <div style="padding:14px 18px; border:1px solid rgba(255,255,255,0.12); border-radius:8px; background:rgba(255,255,255,0.06);"><div style="font-size:13px; font-weight:600; color:#fff;">Bulk Orders (50+)</div><div style="font-size:12px; color:var(--orange);">Contact for pricing</div></div>
+        </div>
+        <div style="text-align:center; margin-top:40px;">
+          <button class="btn btn-blue" onclick="go('order')">Get a free estimate</button>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
+
+<!-- ═══ ORDER ═══ -->
+<div id="p-order" class="page">
+  <div style="padding-top:var(--nav-h)">
+    <section class="order">
+      <div class="wrap">
+        <div class="section-title">Get an estimate</div>
+        <p class="section-sub">Upload your plans, tell us what you need, and we'll send you a quote. No payment upfront.</p>
+
+        <div id="orderSuccess" class="success" style="display:none">
+          <div class="success-check"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <h2>Estimate request sent</h2>
+          <p>We'll review your order and get back to you within a few hours. Estimated total: <strong id="successTotal"></strong></p>
+        </div>
+
+        <div id="orderForm" class="order-card">
+
+          <!-- Contact -->
+          <div class="order-block">
+            <h3>Your info</h3>
+            <div class="form-row" style="margin-bottom:14px;">
+              <div><label class="form-label">Name *</label><input class="form-input" id="f-name" placeholder="John Smith"></div>
+              <div><label class="form-label">Company</label><input class="form-input" id="f-company" placeholder="Company name"></div>
+            </div>
+            <div class="form-row">
+              <div><label class="form-label">Email *</label><input class="form-input" id="f-email" type="email" placeholder="john@company.com"></div>
+              <div><label class="form-label">Phone *</label><input class="form-input" id="f-phone" type="tel" placeholder="(801) 555-1234"></div>
+            </div>
+          </div>
+
+          <!-- Upload -->
+          <div class="order-block">
+            <h3>Upload your plans</h3>
+            <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()">
+              <input type="file" id="fileInput" multiple accept=".pdf,.dwg,.tiff,.tif,.dxf" style="display:none" onchange="handleFiles(this.files)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              <div class="upload-main"><em>Click to upload</em> or drag and drop</div>
+              <div class="upload-sub">PDF, DWG, TIFF — up to 50MB</div>
+            </div>
+            <div id="fileList" class="file-list"></div>
+          </div>
+
+          <!-- Print items -->
+          <div class="order-block">
+            <h3>What do you need printed?</h3>
+            <div id="lineItems"></div>
+            <button class="add-btn" onclick="addItem()">+ Add another item</button>
+          </div>
+
+          <!-- Options -->
+          <div class="order-block">
+            <h3>Options</h3>
+            <div class="form-row" style="margin-bottom:14px;">
+              <div>
+                <label class="form-label">Turnaround</label>
+                <div class="opt-group">
+                  <div class="opt-btn on" id="opt-std" onclick="setTurn('standard')"><div class="opt-btn-label">Standard</div><div class="opt-btn-sub">Next business day</div></div>
+                  <div class="opt-btn" id="opt-rush" onclick="setTurn('rush')"><div class="opt-btn-label">Rush</div><div class="opt-btn-sub">Same day (+35%)</div></div>
+                </div>
+              </div>
+              <div>
+                <label class="form-label">Delivery</label>
+                <div class="opt-group">
+                  <div class="opt-btn on" id="opt-pick" onclick="setDel('pickup')"><div class="opt-btn-label">Pickup</div></div>
+                  <div class="opt-btn" id="opt-del" onclick="setDel('delivery')"><div class="opt-btn-label">Delivery</div></div>
+                </div>
+              </div>
+            </div>
+            <div>
+              <label class="form-label">Notes</label>
+              <textarea class="form-input" id="f-notes" placeholder="Special instructions, binding, etc."></textarea>
+            </div>
+          </div>
+
+          <!-- Submit -->
+          <div class="order-footer">
+            <div>
+              <div class="order-total-label">Estimated total</div>
+              <div class="order-total" id="orderTotal">$0.00</div>
+              <div class="order-total-note" id="rushNote" style="display:none">Includes 35% rush surcharge</div>
+            </div>
+            <button class="btn btn-orange" id="submitBtn" onclick="submitOrder()" style="padding:16px 36px; font-size:16px;">Submit estimate request</button>
+          </div>
+        </div>
+        <p style="text-align:center; margin-top:16px; font-size:12px; color:var(--text-3);">Free estimate — no payment taken. We'll confirm before proceeding.</p>
+      </div>
+    </section>
+  </div>
+</div>
+
+<!-- ═══ CONTACT ═══ -->
+<div id="p-contact" class="page">
+  <div style="padding-top:var(--nav-h)">
+    <section class="contact">
+      <div class="wrap">
+        <div class="section-title">Contact</div>
+        <p class="section-sub">Questions or ready to order? Reach out.</p>
+        <div class="contact-grid">
+          <a href="tel:+18015551234" class="contact-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+            <div class="contact-label">Call or text</div>
+            <div class="contact-value">(801) 555-1234</div>
+            <div class="contact-note">Mon–Sat, 7am–7pm</div>
+          </a>
+          <a href="mailto:plansetprints@gmail.com" class="contact-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+            <div class="contact-label">Email</div>
+            <div class="contact-value">plansetprints@gmail.com</div>
+            <div class="contact-note">We reply within hours</div>
+          </a>
+          <div class="contact-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            <div class="contact-label">Address</div>
+            <div class="contact-value">55 N University Ave</div>
+            <div class="contact-note">Suite 227, Provo, UT 84601</div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="wrap">&copy; 2026 Plan Set Prints &middot; 55 N University Ave, Suite 227, Provo UT 84601</div>
+</footer>
+
+
+<script>
+// ── PRICING ──
+const PRICES = { "18x24":{bw:2,color:4}, "24x36":{bw:3,color:6}, "30x42":{bw:5,color:8}, "36x48":{bw:7.25,color:10} };
+const LABELS = { "18x24":'18" × 24"', "24x36":'24" × 36"', "30x42":'30" × 42"', "36x48":'36" × 48"' };
+
+// ── STATE ──
+let itemCount = 0, turn = 'standard', del = 'pickup';
+
+// ── NAV ──
+function go(p) {
+  document.querySelectorAll('.page').forEach(el => el.classList.remove('active'));
+  document.getElementById('p-' + p).classList.add('active');
+  document.querySelectorAll('.nav-link').forEach(l => l.classList.toggle('active', l.dataset.p === p));
+  document.getElementById('mm').classList.remove('open');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ── PDF PAGE COUNT ──
+let uploadedFiles = [];
+if (typeof pdfjsLib !== 'undefined') {
+  try { pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js'; } catch(e) {}
+}
+
+async function countPages(file) {
+  try {
+    const buf = await file.arrayBuffer();
+    const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
+    return pdf.numPages;
+  } catch(e) { return null; }
+}
+
+async function handleFiles(files) {
+  for (let i = 0; i < files.length; i++) {
+    const f = files[i];
+    if (f.size > 50*1024*1024) { alert(f.name + ' exceeds 50MB limit.'); continue; }
+    const entry = { file: f, name: f.name, size: f.size, pages: null };
+    uploadedFiles.push(entry);
+    renderFiles();
+    if (f.name.toLowerCase().endsWith('.pdf')) {
+      const idx = uploadedFiles.length - 1;
+      const pages = await countPages(f);
+      if (uploadedFiles[idx]) { uploadedFiles[idx].pages = pages; renderFiles(); }
+    }
+  }
+  document.getElementById('fileInput').value = '';
+}
+
+function removeFile(i) { uploadedFiles.splice(i, 1); renderFiles(); }
+
+function fmtSize(b) {
+  if (b < 1024) return b + ' B';
+  if (b < 1048576) return (b/1024).toFixed(1) + ' KB';
+  return (b/1048576).toFixed(1) + ' MB';
+}
+
+function renderFiles() {
+  const el = document.getElementById('fileList');
+  if (!uploadedFiles.length) { el.innerHTML = ''; updateAutofill(); return; }
+  el.innerHTML = uploadedFiles.map((f, i) => {
+    const isPdf = f.name.toLowerCase().endsWith('.pdf');
+    let badge = '';
+    if (isPdf && f.pages) badge = '<span class="file-pages">' + f.pages + ' pg</span>';
+    else if (isPdf) badge = '<span class="file-pages" style="color:var(--text-3);background:var(--bg)">reading…</span>';
+    return '<div class="file-item"><div class="file-info"><div class="file-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div><div><div class="file-name">' + f.name + '</div><div class="file-meta">' + fmtSize(f.size) + '</div></div></div><div class="file-right">' + badge + '<button class="file-remove" onclick="removeFile(' + i + ')">&times;</button></div></div>';
+  }).join('');
+  updateAutofill();
+}
+
+// ── LINE ITEMS ──
+function addItem() {
+  itemCount++;
+  const id = itemCount;
+  const c = document.getElementById('lineItems');
+  const d = document.createElement('div');
+  d.className = 'line-item'; d.id = 'li-' + id;
+  d.innerHTML =
+    (itemCount > 1 ? '<button class="line-item-remove" onclick="rmItem(' + id + ')">&times;</button>' : '') +
+    '<div class="line-item-grid">' +
+      '<div><label class="form-label">Size</label><select class="form-input li-size" onchange="calc()"><option value="18x24">18×24</option><option value="24x36" selected>24×36</option><option value="30x42">30×42</option><option value="36x48">36×48</option></select></div>' +
+      '<div><label class="form-label">Type</label><select class="form-input li-type" onchange="calc()"><option value="bw">B&W</option><option value="color">Color</option></select></div>' +
+      '<div><label class="form-label">Sheets *</label><input class="form-input li-sheets" type="number" min="1" placeholder="25" oninput="calc()"></div>' +
+      '<div><label class="form-label">Copies</label><input class="form-input li-copies" type="number" min="1" value="1" oninput="calc()"></div>' +
+    '</div>' +
+    '<div class="autofill-row" id="af-' + id + '" style="display:none"><span class="autofill-label">Use page count:</span><span id="af-btns-' + id + '"></span></div>' +
+    '<div class="line-sub" id="sub-' + id + '"></div>';
+  c.appendChild(d);
+  updateAutofill();
+  calc();
+}
+
+function rmItem(id) { const e = document.getElementById('li-' + id); if (e) e.remove(); calc(); }
+
+function applyPages(id, pages) {
+  const el = document.getElementById('li-' + id);
+  if (el) { el.querySelector('.li-sheets').value = pages; calc(); }
+}
+
+function updateAutofill() {
+  const pdfs = uploadedFiles.filter(f => f.name.toLowerCase().endsWith('.pdf') && f.pages);
+  document.querySelectorAll('.line-item').forEach(item => {
+    const id = item.id.replace('li-', '');
+    const row = document.getElementById('af-' + id);
+    const btns = document.getElementById('af-btns-' + id);
+    if (!row || !btns) return;
+    if (!pdfs.length) { row.style.display = 'none'; btns.innerHTML = ''; return; }
+    row.style.display = 'flex';
+    btns.innerHTML = pdfs.map(f => {
+      const short = f.name.length > 18 ? f.name.substring(0, 15) + '…' : f.name;
+      return '<button class="autofill-btn" onclick="applyPages(' + id + ',' + f.pages + ')" title="' + f.name + '">' +
+        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>' +
+        short + ' · ' + f.pages + ' pg</button>';
+    }).join(' ');
+  });
+}
+
+// ── OPTIONS ──
+function setTurn(v) { turn = v; document.getElementById('opt-std').classList.toggle('on', v==='standard'); document.getElementById('opt-rush').classList.toggle('on', v==='rush'); calc(); }
+function setDel(v) { del = v; document.getElementById('opt-pick').classList.toggle('on', v==='pickup'); document.getElementById('opt-del').classList.toggle('on', v==='delivery'); }
+
+// ── CALC ──
+function calc() {
+  let total = 0;
+  document.querySelectorAll('.line-item').forEach(item => {
+    const sz = item.querySelector('.li-size').value;
+    const tp = item.querySelector('.li-type').value;
+    const sh = parseInt(item.querySelector('.li-sheets').value) || 0;
+    const cp = parseInt(item.querySelector('.li-copies').value) || 1;
+    const sub = sh * cp * PRICES[sz][tp === 'color' ? 'color' : 'bw'];
+    total += sub;
+    const id = item.id.replace('li-', '');
+    document.getElementById('sub-' + id).innerHTML = sh > 0 ? 'Subtotal: <strong>$' + sub.toFixed(2) + '</strong>' : '';
+  });
+  if (turn === 'rush') total *= 1.35;
+  document.getElementById('orderTotal').textContent = '$' + total.toFixed(2);
+  document.getElementById('rushNote').style.display = turn === 'rush' ? 'block' : 'none';
+}
+
+// ── SUBMIT ──
+async function submitOrder() {
+  const name = document.getElementById('f-name').value.trim();
+  const email = document.getElementById('f-email').value.trim();
+  const phone = document.getElementById('f-phone').value.trim();
+  if (!name || !email || !phone) { alert('Please fill in name, email, and phone.'); return; }
+  let hasSheets = false;
+  document.querySelectorAll('.li-sheets').forEach(el => { if (parseInt(el.value) > 0) hasSheets = true; });
+  if (!hasSheets) { alert('Enter the number of sheets for at least one item.'); return; }
+
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true; btn.textContent = 'Sending…';
+
+  let items = [];
+  document.querySelectorAll('.line-item').forEach((item, i) => {
+    const sz = item.querySelector('.li-size').value;
+    const tp = item.querySelector('.li-type').value;
+    const sh = parseInt(item.querySelector('.li-sheets').value) || 0;
+    const cp = parseInt(item.querySelector('.li-copies').value) || 1;
+    const sub = sh * cp * PRICES[sz][tp === 'color' ? 'color' : 'bw'];
+    items.push('Item ' + (i+1) + ': ' + LABELS[sz] + ' | ' + (tp === 'color' ? 'Color' : 'B&W') + ' | ' + sh + ' sheets × ' + cp + ' copies = $' + sub.toFixed(2));
+  });
+
+  const data = {
+    name, company: document.getElementById('f-company').value.trim() || 'N/A',
+    email, phone,
+    items: items.join('\n'),
+    files: uploadedFiles.length ? uploadedFiles.map(f => f.name + ' (' + fmtSize(f.size) + (f.pages ? ', ' + f.pages + ' pages' : '') + ')').join(', ') : 'None',
+    turnaround: turn === 'rush' ? 'RUSH Same-Day (+35%)' : 'Standard',
+    delivery: del === 'delivery' ? 'Delivery' : 'Pickup',
+    notes: document.getElementById('f-notes').value.trim() || 'None',
+    total: document.getElementById('orderTotal').textContent,
+  };
+
+  // EmailJS: replace with your IDs
+  // emailjs.send('SERVICE_ID', 'TEMPLATE_ID', data, 'PUBLIC_KEY');
+  try {
+    console.log('Order:', data);
+    await new Promise(r => setTimeout(r, 1200));
+    document.getElementById('orderForm').style.display = 'none';
+    document.getElementById('orderSuccess').style.display = 'block';
+    document.getElementById('successTotal').textContent = data.total;
+  } catch(e) {
+    alert('Error submitting. Please call us directly.');
+    btn.disabled = false; btn.textContent = 'Submit estimate request';
+  }
+}
+
+// ── INIT ──
+document.addEventListener('DOMContentLoaded', () => {
+  addItem();
+  const zone = document.getElementById('uploadZone');
+  zone.addEventListener('dragover', e => { e.preventDefault(); zone.style.borderColor = 'var(--navy)'; zone.style.background = 'var(--navy-light)'; });
+  zone.addEventListener('dragleave', () => { zone.style.borderColor = ''; zone.style.background = ''; });
+  zone.addEventListener('drop', e => { e.preventDefault(); zone.style.borderColor = ''; zone.style.background = ''; handleFiles(e.dataTransfer.files); });
+});
+</script>
+</body>
+</html>
