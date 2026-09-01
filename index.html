@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Plan Set Prints — Blueprint Printing, Utah County</title>
-<meta name="description" content="Fast, affordable large-format blueprint printing for contractors and architects in Utah County. Same-day turnaround.">
+<meta name="description" content="Fast, affordable large-format blueprint printing for contractors and architects in Utah County. 1–3 business day turnaround.">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <style>
@@ -345,7 +345,7 @@ textarea.form-input { min-height: 72px; resize: vertical; }
       <div class="hero-details">
         <div class="hero-detail">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-          Same-day turnaround
+          1–3 business day turnaround
         </div>
         <div class="hero-detail">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
@@ -454,7 +454,7 @@ textarea.form-input { min-height: 72px; resize: vertical; }
             </div>
             <div class="form-row">
               <div><label class="form-label">Email *</label><input class="form-input" id="f-email" type="email" placeholder="john@company.com"></div>
-              <div><label class="form-label">Phone *</label><input class="form-input" id="f-phone" type="tel" placeholder="(801) 555-1234"></div>
+              <div><label class="form-label">Phone *</label><input class="form-input" id="f-phone" type="tel" placeholder="(435) 730-7705"></div>
             </div>
           </div>
 
@@ -484,8 +484,8 @@ textarea.form-input { min-height: 72px; resize: vertical; }
               <div>
                 <label class="form-label">Turnaround</label>
                 <div class="opt-group">
-                  <div class="opt-btn on" id="opt-std" onclick="setTurn('standard')"><div class="opt-btn-label">Standard</div><div class="opt-btn-sub">Next business day</div></div>
-                  <div class="opt-btn" id="opt-rush" onclick="setTurn('rush')"><div class="opt-btn-label">Rush</div><div class="opt-btn-sub">Same day (+35%)</div></div>
+                  <div class="opt-btn on" id="opt-std" onclick="setTurn('standard')"><div class="opt-btn-label">Standard</div><div class="opt-btn-sub">1–3 business days</div></div>
+                  <div class="opt-btn" id="opt-rush" onclick="setTurn('rush')"><div class="opt-btn-label">Rush</div><div class="opt-btn-sub">Next day (+35%)</div></div>
                 </div>
               </div>
               <div>
@@ -526,10 +526,10 @@ textarea.form-input { min-height: 72px; resize: vertical; }
         <div class="section-title">Contact</div>
         <p class="section-sub">Questions or ready to order? Reach out.</p>
         <div class="contact-grid">
-          <a href="tel:+18015551234" class="contact-item">
+          <a href="tel:+14357307705" class="contact-item">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
             <div class="contact-label">Call or text</div>
-            <div class="contact-value">(801) 555-1234</div>
+            <div class="contact-value">(435) 730-7705</div>
             <div class="contact-note">Mon–Sat, 7am–7pm</div>
           </a>
           <a href="mailto:plansetprints@gmail.com" class="contact-item">
@@ -721,7 +721,7 @@ async function submitOrder() {
     email, phone,
     items: items.join('\n'),
     files: uploadedFiles.length ? uploadedFiles.map(f => f.name + ' (' + fmtSize(f.size) + (f.pages ? ', ' + f.pages + ' pages' : '') + ')').join(', ') : 'None',
-    turnaround: turn === 'rush' ? 'RUSH Same-Day (+35%)' : 'Standard',
+    turnaround: turn === 'rush' ? 'RUSH Next-Day (+35%)' : 'Standard (1-3 business days)',
     delivery: del === 'delivery' ? 'Delivery' : 'Pickup',
     notes: document.getElementById('f-notes').value.trim() || 'None',
     total: document.getElementById('orderTotal').textContent,
