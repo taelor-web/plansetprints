@@ -720,9 +720,9 @@ function fileToBase64(file) {
   });
 }
 
-async function uploadToDrive(customer, company) {
-  if (!uploadedFiles.length) return { ok: true, folderUrl: '' };
-  const payload = { key: UPLOAD_KEY, customer: customer, company: company, files: [] };
+async function uploadToDrive(customer, company, email, phone, total) {
+  if (!uploadedFiles.length) return { ok: true };
+  const payload = { key: UPLOAD_KEY, customer, company, email, phone, total, files: [] };
   for (const f of uploadedFiles) {
     payload.files.push({
       name: f.name,
@@ -730,12 +730,15 @@ async function uploadToDrive(customer, company) {
       data: await fileToBase64(f.file)
     });
   }
-  const res = await fetch(UPLOAD_URL, {
+  // no-cors: Apps Script redirects cross-origin, so the response can't be read.
+  // The script emails the Drive link itself once the files land.
+  await fetch(UPLOAD_URL, {
     method: 'POST',
+    mode: 'no-cors',
     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
     body: JSON.stringify(payload)
   });
-  return await res.json();
+  return { ok: true };
 }
 
 // ── SUBMIT ──
@@ -756,12 +759,13 @@ async function submitOrder() {
   if (uploadedFiles.length) {
     btn.textContent = 'Uploading files…';
     try {
-      const up = await uploadToDrive(
+      await uploadToDrive(
         document.getElementById('f-name').value.trim(),
-        document.getElementById('f-company').value.trim()
+        document.getElementById('f-company').value.trim(),
+        document.getElementById('f-email').value.trim(),
+        document.getElementById('f-phone').value.trim(),
+        document.getElementById('orderTotal').textContent
       );
-      if (up && up.ok) { driveFolderUrl = up.folderUrl || ''; }
-      else { uploadFailed = true; console.warn('Upload rejected:', up); }
     } catch (err) { uploadFailed = true; console.warn('Upload error:', err); }
   }
   btn.textContent = 'Sending…';
@@ -835,8 +839,8 @@ async function submitOrder() {
   } else {
     h += '<div style="padding:9px 14px;border:1px dashed '+BORDER+';border-radius:6px;font-size:13px;color:'+MUTED+';">No files uploaded \u2014 customer will send separately</div>';
   }
-  if (driveFolderUrl) {
-    h += '<div style="margin-top:8px;"><a href="'+driveFolderUrl+'" style="display:inline-block;background:'+ORANGE+';color:#fff;text-decoration:none;padding:10px 18px;border-radius:6px;font-size:14px;font-weight:700;">Open files in Google Drive</a></div>';
+  if (uploadedFiles.length && !uploadFailed) {
+    h += '<div style="margin-top:8px;padding:10px 14px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;font-size:13px;color:#15803d;">Files sent to Google Drive \u2014 see the separate <strong>Files received</strong> email for the folder link.</div>';
   } else if (uploadFailed && uploadedFiles.length) {
     h += '<div style="margin-top:8px;padding:10px 14px;background:#fef2f2;border:1px solid #fecaca;border-radius:6px;font-size:13px;color:#b91c1c;"><strong>Upload failed.</strong> Ask the customer to email the files directly.</div>';
   }
