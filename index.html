@@ -720,25 +720,23 @@ function fileToBase64(file) {
   });
 }
 
-async function uploadToDrive(customer, company, email, phone, total) {
-  if (!uploadedFiles.length) return { ok: true };
-  const payload = { key: UPLOAD_KEY, customer, company, email, phone, total, files: [] };
+async function sendOrderToScript(data) {
+  const payload = Object.assign({ key: UPLOAD_KEY }, data, { files: [] });
   for (const f of uploadedFiles) {
     payload.files.push({
       name: f.name,
       mimeType: f.file.type || 'application/octet-stream',
+      size: fmtSize(f.size),
+      pages: f.pages || null,
       data: await fileToBase64(f.file)
     });
   }
-  // no-cors: Apps Script redirects cross-origin, so the response can't be read.
-  // The script emails the Drive link itself once the files land.
   await fetch(UPLOAD_URL, {
     method: 'POST',
     mode: 'no-cors',
     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
     body: JSON.stringify(payload)
   });
-  return { ok: true };
 }
 
 // ── SUBMIT ──
@@ -753,22 +751,7 @@ async function submitOrder() {
 
   const btn = document.getElementById('submitBtn');
   btn.disabled = true;
-
-  // Upload files to Drive first
-  let driveFolderUrl = '', uploadFailed = false;
-  if (uploadedFiles.length) {
-    btn.textContent = 'Uploading files…';
-    try {
-      await uploadToDrive(
-        document.getElementById('f-name').value.trim(),
-        document.getElementById('f-company').value.trim(),
-        document.getElementById('f-email').value.trim(),
-        document.getElementById('f-phone').value.trim(),
-        document.getElementById('orderTotal').textContent
-      );
-    } catch (err) { uploadFailed = true; console.warn('Upload error:', err); }
-  }
-  btn.textContent = 'Sending…';
+  btn.textContent = uploadedFiles.length ? 'Uploading files…' : 'Sending…';
 
   let items = [], rows = [];
   document.querySelectorAll('.line-item').forEach((item, i) => {
@@ -798,7 +781,6 @@ async function submitOrder() {
   body += uploadedFiles.length
     ? uploadedFiles.map(f => f.name + ' (' + fmtSize(f.size) + (f.pages ? ', ' + f.pages + ' pages' : '') + ')').join('\n') + '\n'
     : 'None uploaded\n';
-  if (driveFolderUrl) body += 'Drive folder: ' + driveFolderUrl + '\n';
   body += '\nORDER\n' + RULE + '\n' + items.join('\n') + '\n' + RULE + '\n';
   body += 'TOTAL: ' + totalTxt + '\n\n';
   body += 'Turnaround: ' + turnLabel + '\nDelivery: ' + delLabel + '\n';
@@ -839,10 +821,8 @@ async function submitOrder() {
   } else {
     h += '<div style="padding:9px 14px;border:1px dashed '+BORDER+';border-radius:6px;font-size:13px;color:'+MUTED+';">No files uploaded \u2014 customer will send separately</div>';
   }
-  if (uploadedFiles.length && !uploadFailed) {
-    h += '<div style="margin-top:8px;padding:10px 14px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;font-size:13px;color:#15803d;">Files sent to Google Drive \u2014 see the separate <strong>Files received</strong> email for the folder link.</div>';
-  } else if (uploadFailed && uploadedFiles.length) {
-    h += '<div style="margin-top:8px;padding:10px 14px;background:#fef2f2;border:1px solid #fecaca;border-radius:6px;font-size:13px;color:#b91c1c;"><strong>Upload failed.</strong> Ask the customer to email the files directly.</div>';
+  if (uploadedFiles.length) {
+    h += '<div style="margin-top:8px;padding:10px 14px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;font-size:13px;color:#15803d;">Files were uploaded with this order.</div>';
   }
   h += '</div>';
 
@@ -887,24 +867,32 @@ async function submitOrder() {
   const subject = 'Print Order \u2014 ' + name + (company ? ' (' + company + ')' : '') + ' \u2014 ' + totalTxt;
 
   try {
-    await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
-      subject: subject, body: h,
-      from_name: name, from_email: email, reply_to: email,
+    await sendOrderToScript({
+      customer: name, company: company, email: email, phone: phone,
+      total: totalTxt, turnaround: turnLabel, delivery: delLabel,
+      notes: notes, isRush: turn === 'rush', rows: rows
     });
     document.getElementById('orderForm').style.display = 'none';
     document.getElementById('orderSuccess').style.display = 'block';
     document.getElementById('successTotal').textContent = totalTxt;
     window.scrollTo({ top: 0, behavior: 'smooth' });
-  } catch(err) {
-    console.error('EmailJS error:', err);
-    btn.disabled = false; btn.textContent = 'Submit estimate request';
-    if (confirm('Automatic sending failed. Send via your email app instead?')) {
-      window.location.href = 'mailto:' + ORDER_EMAIL + '?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
-      setTimeout(() => {
-        document.getElementById('orderForm').style.display = 'none';
-        document.getElementById('orderSuccess').style.display = 'block';
-        document.getElementById('successTotal').textContent = totalTxt;
-      }, 500);
+  } catch (err) {
+    console.error('Order send failed:', err);
+    // Backup: EmailJS (order details only, no files)
+    try {
+      await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
+        subject: subject, body: h, from_name: name, from_email: email, reply_to: email,
+      });
+      document.getElementById('orderForm').style.display = 'none';
+      document.getElementById('orderSuccess').style.display = 'block';
+      document.getElementById('successTotal').textContent = totalTxt;
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } catch (err2) {
+      btn.disabled = false; btn.textContent = 'Submit estimate request';
+      if (confirm('Sending failed. Open your email app instead?')) {
+        window.location.href = 'mailto:' + ORDER_EMAIL +
+          '?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
+      }
     }
   }
 }
