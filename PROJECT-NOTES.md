@@ -58,7 +58,31 @@ Rush +35%. Bulk 50+ sheets: contact for pricing.
   Do NOT switch DNS until testing is done.
 - Single file: `index.html`. No build step.
 
-## EmailJS (order notifications)
+## Google Apps Script (orders + file uploads) — PRIMARY
+
+**Endpoint:** `https://script.google.com/macros/s/AKfycbwPLC7smILQcTgI-zXnHGVRl2uXhN9nkd8W-wXkFll0X7Ctv0qSUgZVgYHgfLnjJ0pdzw/exec`
+**Shared key:** `psp-7f3k9x2m` (sent with every request; script rejects without it)
+**Project:** script.google.com, "Plan Set Prints", owned by plansetprints@gmail.com
+
+This handles everything: receives the order + files, saves files to Drive under
+`Plan Set Prints — Orders / [date] — [customer] ([company])`, then sends ONE
+styled order email with the Drive folder link. Source is `plansetprints-upload.gs`.
+
+Limits: 12 files, 35MB per file, 90MB per order. Allowed: pdf, dwg, dxf, tif, tiff.
+Order folders are private — accessed through his own Drive.
+
+**GOTCHAS — these cost real time during setup:**
+1. The site POSTs with `mode: 'no-cors'` because Apps Script redirects
+   cross-origin and the browser can't read the response. That's why the script
+   sends the email itself rather than returning a link to the site.
+2. **Editing the script does nothing until redeployed.** Deploy → Manage
+   deployments → pencil icon → **Version: New version** → Deploy. Leaving the
+   version dropdown alone silently redeploys the OLD code. This bit us twice.
+3. To verify which version is live, open the `/exec` URL in a browser. It should
+   say "order endpoint is live." If it says "upload endpoint", it's stale.
+4. Use Manage deployments, not New deployment — a new one changes the URL.
+
+## EmailJS (fallback only)
 
 | | |
 |---|---|
@@ -73,9 +97,9 @@ escapes the HTML and the email arrives as raw markup. Subject is `{{subject}}`,
 To Email is `plansetprints@gmail.com`, Reply To is `{{reply_to}}`.
 This was the single biggest gotcha during setup.
 
-The site builds a full styled HTML email (navy header, orange stripe, customer
-table, file list, order table, total block). All formatting lives in the site
-code, so the EmailJS template never needs editing again.
+**No longer the primary path.** EmailJS only fires if the Apps Script request
+fails outright — it sends order details without the file link so a lead is never
+lost. Below that there's a mailto fallback as a last resort.
 
 There is a separate Ridgeline Scanning EmailJS account (different login,
 service_usmg3tz) — unrelated, and he couldn't access it.
@@ -92,7 +116,7 @@ service_usmg3tz) — unrelated, and he couldn't access it.
 
 ## Outstanding
 
-- [ ] Deploy Apps Script upload endpoint, wire URL into site
+- [x] Deploy Apps Script endpoint, wire into site — DONE, working end to end
 - [ ] Create Square account
 - [ ] Google Analytics 4 for visitor tracking
 - [ ] Verify pricing is current
