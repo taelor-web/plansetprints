@@ -466,7 +466,7 @@ textarea.form-input { min-height: 72px; resize: vertical; }
               <input type="file" id="fileInput" multiple accept=".pdf,.dwg,.tiff,.tif,.dxf" style="display:none" onchange="handleFiles(this.files)">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
               <div class="upload-main"><em>Click to upload</em> or drag and drop</div>
-              <div class="upload-sub">PDF, DWG, TIFF — up to 50MB</div>
+              <div class="upload-sub">PDF, DWG, TIFF — up to 35MB each</div>
             </div>
             <div id="fileList" class="file-list"></div>
           </div>
@@ -565,6 +565,11 @@ const EMAILJS_PUBLIC_KEY  = 'GfhzLLe_u4w7Y0iJJ';
 const EMAILJS_SERVICE_ID  = 'service_tyspguh';
 const EMAILJS_TEMPLATE_ID = 'template_f7fk669';
 const ORDER_EMAIL         = 'plansetprints@gmail.com';
+
+// Google Drive upload endpoint (Apps Script)
+const UPLOAD_URL = 'https://script.google.com/macros/s/AKfycbwPLC7smILQcTgI-zXnHGVRl2uXhN9nkd8W-wXkFll0X7Ctv0qSUgZVgYHgfLnjJ0pdzw/exec';
+const UPLOAD_KEY = 'psp-7f3k9x2m';
+const MAX_FILE_MB = 35;
 // ============================================================
 
 if (typeof emailjs !== 'undefined') { emailjs.init(EMAILJS_PUBLIC_KEY); }
@@ -602,7 +607,7 @@ async function countPages(file) {
 async function handleFiles(files) {
   for (let i = 0; i < files.length; i++) {
     const f = files[i];
-    if (f.size > 50*1024*1024) { alert(f.name + ' exceeds 50MB limit.'); continue; }
+    if (f.size > MAX_FILE_MB*1024*1024) { alert(f.name + ' is larger than ' + MAX_FILE_MB + 'MB. Please email it to plansetprints@gmail.com instead.'); continue; }
     const entry = { file: f, name: f.name, size: f.size, pages: null };
     uploadedFiles.push(entry);
     renderFiles();
@@ -705,6 +710,34 @@ function calc() {
   document.getElementById('rushNote').style.display = turn === 'rush' ? 'block' : 'none';
 }
 
+// ── DRIVE UPLOAD ──
+function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const r = new FileReader();
+    r.onload = () => resolve(String(r.result).split(',')[1]);
+    r.onerror = reject;
+    r.readAsDataURL(file);
+  });
+}
+
+async function uploadToDrive(customer, company) {
+  if (!uploadedFiles.length) return { ok: true, folderUrl: '' };
+  const payload = { key: UPLOAD_KEY, customer: customer, company: company, files: [] };
+  for (const f of uploadedFiles) {
+    payload.files.push({
+      name: f.name,
+      mimeType: f.file.type || 'application/octet-stream',
+      data: await fileToBase64(f.file)
+    });
+  }
+  const res = await fetch(UPLOAD_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify(payload)
+  });
+  return await res.json();
+}
+
 // ── SUBMIT ──
 async function submitOrder() {
   const name = document.getElementById('f-name').value.trim();
@@ -716,7 +749,22 @@ async function submitOrder() {
   if (!hasSheets) { alert('Enter the number of sheets for at least one item.'); return; }
 
   const btn = document.getElementById('submitBtn');
-  btn.disabled = true; btn.textContent = 'Sending…';
+  btn.disabled = true;
+
+  // Upload files to Drive first
+  let driveFolderUrl = '', uploadFailed = false;
+  if (uploadedFiles.length) {
+    btn.textContent = 'Uploading files…';
+    try {
+      const up = await uploadToDrive(
+        document.getElementById('f-name').value.trim(),
+        document.getElementById('f-company').value.trim()
+      );
+      if (up && up.ok) { driveFolderUrl = up.folderUrl || ''; }
+      else { uploadFailed = true; console.warn('Upload rejected:', up); }
+    } catch (err) { uploadFailed = true; console.warn('Upload error:', err); }
+  }
+  btn.textContent = 'Sending…';
 
   let items = [], rows = [];
   document.querySelectorAll('.line-item').forEach((item, i) => {
@@ -746,6 +794,7 @@ async function submitOrder() {
   body += uploadedFiles.length
     ? uploadedFiles.map(f => f.name + ' (' + fmtSize(f.size) + (f.pages ? ', ' + f.pages + ' pages' : '') + ')').join('\n') + '\n'
     : 'None uploaded\n';
+  if (driveFolderUrl) body += 'Drive folder: ' + driveFolderUrl + '\n';
   body += '\nORDER\n' + RULE + '\n' + items.join('\n') + '\n' + RULE + '\n';
   body += 'TOTAL: ' + totalTxt + '\n\n';
   body += 'Turnaround: ' + turnLabel + '\nDelivery: ' + delLabel + '\n';
@@ -785,6 +834,11 @@ async function submitOrder() {
     });
   } else {
     h += '<div style="padding:9px 14px;border:1px dashed '+BORDER+';border-radius:6px;font-size:13px;color:'+MUTED+';">No files uploaded \u2014 customer will send separately</div>';
+  }
+  if (driveFolderUrl) {
+    h += '<div style="margin-top:8px;"><a href="'+driveFolderUrl+'" style="display:inline-block;background:'+ORANGE+';color:#fff;text-decoration:none;padding:10px 18px;border-radius:6px;font-size:14px;font-weight:700;">Open files in Google Drive</a></div>';
+  } else if (uploadFailed && uploadedFiles.length) {
+    h += '<div style="margin-top:8px;padding:10px 14px;background:#fef2f2;border:1px solid #fecaca;border-radius:6px;font-size:13px;color:#b91c1c;"><strong>Upload failed.</strong> Ask the customer to email the files directly.</div>';
   }
   h += '</div>';
 
