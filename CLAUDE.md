@@ -42,6 +42,10 @@ CSS custom properties at the top of `index.html` (`:root`):
 | `--orange-light`| `#fef5eb` | Rush badges                              |
 
 Typeface: Inter. Logo: house outline with rolled plans, navy + orange.
+Logo files in `img/` are cropped/resized from the masters in Drive at
+`My Drive/Plan Set Prints/Plan Set Prints/Done/` (`long.png` → `img/logo.png` in the
+white nav bar; `Transparent.png` house → `img/favicon.png`; `Logo White.png` PSP house →
+`img/apple-touch-icon.png`). The logo blue doesn't read on navy, so the nav is white.
 Style: clean, white background, professional, **simple** — an earlier version was
 rejected for being too busy. Lean toward less. The order email in `Code.gs` has its
 own `NAVY`/`ORANGE` constants; keep them in sync with the site.

@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Plan Set Prints — Blueprint Printing, Utah County</title>
 <meta name="description" content="Fast, affordable large-format blueprint printing for contractors and architects in Utah County. 1–3 business day turnaround.">
+<link rel="icon" type="image/png" href="img/favicon.png">
+<link rel="apple-touch-icon" href="img/apple-touch-icon.png">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
@@ -46,41 +48,38 @@ input, select, textarea { font-family: inherit; }
 /* ── NAV ── */
 .nav {
   position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-  height: var(--nav-h); background: var(--navy-dark);
+  height: var(--nav-h); background: var(--white);
   border-bottom: 3px solid var(--orange);
 }
 .nav-inner {
   max-width: var(--max-w); margin: 0 auto; padding: 0 24px;
   height: 100%; display: flex; align-items: center; justify-content: space-between;
 }
-.nav-logo {
-  font-size: 17px; font-weight: 800; letter-spacing: -0.03em;
-  cursor: pointer; display: flex; align-items: center; gap: 8px; color: #fff;
-}
-.nav-logo svg { color: var(--orange); }
+.nav-logo { cursor: pointer; display: flex; align-items: center; }
+.nav-logo img { height: 34px; width: auto; display: block; }
 .nav-links { display: flex; align-items: center; gap: 4px; }
 .nav-link {
-  background: none; border: none; color: rgba(255,255,255,0.7);
+  background: none; border: none; color: var(--text-2);
   padding: 8px 14px; border-radius: 6px; font-size: 14px; font-weight: 500;
   transition: all 0.15s;
 }
-.nav-link:hover, .nav-link.active { color: #fff; background: rgba(255,255,255,0.1); }
+.nav-link:hover, .nav-link.active { color: var(--navy-dark); background: var(--navy-light); }
 .nav-cta {
   background: var(--orange); color: #fff; border: none;
   padding: 8px 18px; border-radius: 6px; font-size: 14px; font-weight: 600;
   margin-left: 8px; transition: background 0.15s;
 }
 .nav-cta:hover { background: var(--orange-hover); }
-.nav-mobile { display: none; background: none; border: none; padding: 4px; color: #fff; }
+.nav-mobile { display: none; background: none; border: none; padding: 4px; color: var(--navy-dark); }
 .mobile-menu {
   display: none; position: absolute; top: var(--nav-h); left: 0; right: 0;
-  background: var(--navy-dark); border-bottom: 3px solid var(--orange); padding: 8px 24px 16px;
+  background: var(--white); border-bottom: 3px solid var(--orange); padding: 8px 24px 16px;
 }
 .mobile-menu.open { display: block; }
 .mobile-menu button {
   display: block; width: 100%; text-align: left; background: none; border: none;
-  padding: 12px 0; font-size: 15px; font-weight: 500; color: rgba(255,255,255,0.8);
-  border-bottom: 1px solid rgba(255,255,255,0.1);
+  padding: 12px 0; font-size: 15px; font-weight: 500; color: var(--navy-dark);
+  border-bottom: 1px solid var(--navy-light);
 }
 @media (max-width: 640px) {
   .nav-links { display: none; }
@@ -310,8 +309,7 @@ textarea.form-input { min-height: 72px; resize: vertical; }
 <nav class="nav">
   <div class="nav-inner">
     <div class="nav-logo" onclick="go('home')">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
-      Plan Set Prints
+      <img src="img/logo.png" alt="Plan Set Prints">
     </div>
     <div class="nav-links">
       <button class="nav-link" data-p="home" onclick="go('home')">Home</button>
